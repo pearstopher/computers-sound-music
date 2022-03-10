@@ -87,7 +87,7 @@ class Sampler(Spec):
     def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
         super().__init__(channels, bits, amplitude, duration, frequency, sample_rate)
         # set max value for current number of bits
-        self.max = 2**bits - 1
+        self.max = 2**(bits - 1) - 1
         self.min = -self.max - 1
         # generate the samples
         self.samples = None
