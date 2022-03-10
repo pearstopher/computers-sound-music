@@ -90,14 +90,14 @@ class Sampler(Spec):
         self.max = 2**bits - 1
         self.min = -self.max - 1
         # generate the samples
-        self.samples = self.generate_samples()
+        self.samples = None
+        self.generate_samples()
 
     def generate_samples(self):
-        samples = ((self.amplitude * self.max) *
-                   np.sin((2*np.pi) *
-                          (np.arange(self.sample_rate*self.duration))
-                          * (self.frequency/self.sample_rate)))
-        return samples
+        self.samples = ((self.amplitude * self.max) *
+                        np.sin((2*np.pi) *
+                               (np.arange(self.sample_rate*self.duration)) *
+                               (self.frequency/self.sample_rate)))
 
     # play the samples with pyaudio
     def play(self):
@@ -116,19 +116,37 @@ class Sampler(Spec):
         stream.close()
         p.terminate()
 
+    # write the samples to disk
+    def write(self, file="default.wav"):
+        samples = self.samples.astype(np.int16)
+        wf.write(file, self.sample_rate, samples)
+
 
 def main():
     print("Homework 1")
 
+    # Part 1
+    #
     # Channels per frame: 1 (mono)
     # Sample size: 16 bits
     # Amplitude: ¼ maximum possible amplitude (-8192..8192)
     # Duration: one second
     # Frequency: 440Hz
     # Sample Rate: 48000 samples per second
-    s = Sampler(1, 16, 0.5, 1, 440, 48000)
-
+    s = Sampler(1, 16, 0.25, 1, 440, 48000)
     s.play()
+    s.write("sine.wav")
+
+    # Part 2
+    #
+    # ½ maximum amplitude (-16384..16384), except:
+    # samples that would be greater than ¼ maximum amplitude (8192) should instead be ¼ maximum amplitude;
+    # samples that would be less than ¼ minimum amplitude (-8192) should instead be ¼ minimum amplitude.
+
+    # update amplitude
+    # could make a new Sampler but why not re-use the old one?
+    s.amplitude = 0.5
+    s.generate_samples()
 
     # chop the top
     new_max = s.max / 4
@@ -139,11 +157,7 @@ def main():
     s.samples = np.where(s.samples >= new_min, s.samples, new_min)
 
     s.play()
-
-
-
-    # write the file
-    wf.write("sine.wav", s.sample_rate, s.samples)
+    s.write("clipped.wav")
 
 
 if __name__ == '__main__':
