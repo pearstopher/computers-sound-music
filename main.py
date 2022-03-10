@@ -67,7 +67,6 @@ import pyaudio
 # class for holding the specifications for the audio file
 class Spec:
     def __init__(self,
-                 file="default.wav",
                  channels=1,
                  bits=16,
                  amplitude=1.0,
@@ -75,7 +74,6 @@ class Spec:
                  frequency=440,
                  sample_rate=48000,
                  ):
-        self.file = file
         self.channels = channels
         self.bits = bits
         self.amplitude = amplitude
@@ -95,10 +93,26 @@ def sample(spec):
     return samples
 
 
+# create a sampler class based off of Spec
+class Sampler(Spec):
+    def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
+        super.__init__(channels, bits, amplitude, duration, frequency, sample_rate)
+
+        self.samples = self.generate_samples()
+
+    def generate_samples(self):
+        amp_max = 2**self.bits - 1
+        samples = ((self.amplitude * amp_max) *
+                   np.sin((2*np.pi) *
+                          (np.arange(self.sample_rate*self.duration))
+                          * (self.frequency/self.sample_rate)))
+        return samples
+
+
 def main():
     print("Homework 1")
 
-    specs = Spec("sine.wav", 1, 16, 0.5, 1, 440, 48000)
+    specs = Sampler("sine.wav", 1, 16, 0.5, 1, 440, 48000)
     samples = sample(specs)
 
     # chop the top
