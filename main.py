@@ -3,7 +3,16 @@
 # Christopher Juncker
 #
 
-import wave
+import numpy as np
+
+# wave was suggested but I am exploring alternatives like scipy
+# import wave
+#
+# example of writing a .wav file with scipy
+# https://stackoverflow.com/questions/52477889
+import scipy.io.wavfile as wf
+
+
 # INSTALLING/IMPORTING sounddevice:
 #   (sounddevice was suggested as a simpler alternative to pyaudio)
 #   >pip install sounddevice
@@ -18,12 +27,6 @@ import wave
 #   then I `pip install The_file_I_downloaded.whl`
 #   (source: https://stackoverflow.com/questions/59467023)
 import pyaudio
-
-import numpy as np
-
-# example of writing a .wav file with scipy
-# https://stackoverflow.com/questions/52477889
-import scipy.io.wavfile as wf
 
 
 # The Assignment
@@ -60,48 +63,71 @@ import scipy.io.wavfile as wf
 #       Each time your program is run, it should do all three of these things.
 #
 
-p = pyaudio.PyAudio()
 
-# specifications for my file
-#
-# writes a sine wave to a WAV file named sine.wav in the current directory
-FILE = "./sine.wav"
-# Channels per frame: 1 (mono)
-CHANNELS = 1
-# Sample size: 16 bits
-BITS = 16
-# Amplitude: ¼ maximum possible amplitude (-8192..8192)
-AMP = -4096
-# Duration: one second
-DURATION = 1
-# Frequency: 440Hz
-FREQ = 440
-# Sample Rate: 48000 samples per second
-RATE = 48000
-
-
-# nice help with tobytes() from yahweh
-# https://stackoverflow.com/questions/8299303
-samples = (np.sin(2*np.pi*np.arange(RATE*DURATION)*FREQ/RATE)).astype(np.float32)
-
-stream = p.open(format=pyaudio.paFloat32,
-                channels=1,
-                rate=RATE,
-                output=True)
-
-# play the file
-stream.write(1*samples.tobytes())
-stream.stop_stream()
-stream.close()
-p.terminate()
+# class for holding the specifications for the audio file
+class Spec:
+    def __init__(self,
+                 file="default.wav",
+                 channels=1,
+                 bits=16,
+                 amplitude=1.0,
+                 duration=1.0,
+                 frequency=440,
+                 sample_rate=48000,
+                 ):
+        self.file = file
+        self.channels = channels
+        self.bits = bits
+        self.amplitude = amplitude
+        self.duration = duration
+        self.frequency = frequency
+        self.sample_rate = sample_rate
 
 
-# write the file
-wf.write(FILE, RATE, samples)
+# class for creating a sample based on given specifications
+def sample(spec):
+    amp_max = 2**spec.bits - 1
+    samples = ((spec.amplitude * amp_max) *
+               np.sin((2*np.pi) *
+                      (np.arange(spec.sample_rate*spec.duration))
+                      * (spec.frequency/spec.sample_rate)))
+
+    return samples
 
 
 def main():
     print("Homework 1")
+
+    specs = Spec("sine.wav", 1, 16, 0.5, 1, 440, 48000)
+    samples = sample(specs)
+
+    # chop the top
+    samples = np.where(samples <= (32767 * (specs.amplitude / 2)),
+                       samples,
+                       (32767 * (specs.amplitude / 2)))
+    # chop the bottom
+    # chop the top
+    samples = np.where(samples >= -(32767 * (specs.amplitude / 2)),
+                       samples,
+                       -(32767 * (specs.amplitude / 2)))
+
+    samples = samples.astype(np.int16)  # np.Float32
+
+    p = pyaudio.PyAudio()
+    # stream = p.open(format=pyaudio.paFloat32,
+    stream = p.open(format=pyaudio.paInt16,
+                    channels=1,
+                    rate=specs.sample_rate,
+                    output=True)
+
+    # play the file
+    stream.write(1 * samples.tobytes())  # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    # write the file
+    wf.write(specs.file, specs.sample_rate, samples)
 
 
 if __name__ == '__main__':
