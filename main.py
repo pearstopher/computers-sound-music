@@ -86,46 +86,61 @@ class Spec:
 class Sampler(Spec):
     def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
         super().__init__(channels, bits, amplitude, duration, frequency, sample_rate)
+        # set max value for current number of bits
+        self.max = 2**bits - 1
+        self.min = -self.max - 1
+        # generate the samples
         self.samples = self.generate_samples()
 
     def generate_samples(self):
-        amp_max = 2**self.bits - 1
-        samples = ((self.amplitude * amp_max) *
+        samples = ((self.amplitude * self.max) *
                    np.sin((2*np.pi) *
                           (np.arange(self.sample_rate*self.duration))
                           * (self.frequency/self.sample_rate)))
         return samples
 
+    # play the samples with pyaudio
+    def play(self):
+        # this should only be used when bytes are set to 16
+        # don't convert the original samples, they will be reused
+        samples = self.samples.astype(np.int16)  # np.Float32, etc
+
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,  # paFloat32, etc
+                        channels=1,
+                        rate=self.sample_rate,
+                        output=True)
+        # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
+        stream.write(1 * samples.tobytes())
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
 
 def main():
     print("Homework 1")
 
+    # Channels per frame: 1 (mono)
+    # Sample size: 16 bits
+    # Amplitude: ¼ maximum possible amplitude (-8192..8192)
+    # Duration: one second
+    # Frequency: 440Hz
+    # Sample Rate: 48000 samples per second
     s = Sampler(1, 16, 0.5, 1, 440, 48000)
 
+    s.play()
+
     # chop the top
-    s.samples = np.where(s.samples <= (32767 * (s.amplitude / 2)),
-                         s.samples,
-                         (32767 * (s.amplitude / 2)))
+    new_max = s.max / 4
+    s.samples = np.where(s.samples <= new_max, s.samples, new_max)
+
     # chop the bottom
-    # chop the top
-    s.samples = np.where(s.samples >= -(32767 * (s.amplitude / 2)),
-                         s.samples,
-                         -(32767 * (s.amplitude / 2)))
+    new_min = s.min / 4
+    s.samples = np.where(s.samples >= new_min, s.samples, new_min)
 
-    s.samples = s.samples.astype(np.int16)  # np.Float32
+    s.play()
 
-    p = pyaudio.PyAudio()
-    # stream = p.open(format=pyaudio.paFloat32,
-    stream = p.open(format=pyaudio.paInt16,
-                    channels=1,
-                    rate=s.sample_rate,
-                    output=True)
 
-    # play the file
-    stream.write(1 * s.samples.tobytes())  # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
 
     # write the file
     wf.write("sine.wav", s.sample_rate, s.samples)
