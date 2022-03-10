@@ -82,22 +82,10 @@ class Spec:
         self.sample_rate = sample_rate
 
 
-# class for creating a sample based on given specifications
-def sample(spec):
-    amp_max = 2**spec.bits - 1
-    samples = ((spec.amplitude * amp_max) *
-               np.sin((2*np.pi) *
-                      (np.arange(spec.sample_rate*spec.duration))
-                      * (spec.frequency/spec.sample_rate)))
-
-    return samples
-
-
-# create a sampler class based off of Spec
+# class which creates samples based on Spec
 class Sampler(Spec):
     def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
-        super.__init__(channels, bits, amplitude, duration, frequency, sample_rate)
-
+        super().__init__(channels, bits, amplitude, duration, frequency, sample_rate)
         self.samples = self.generate_samples()
 
     def generate_samples(self):
@@ -112,36 +100,35 @@ class Sampler(Spec):
 def main():
     print("Homework 1")
 
-    specs = Sampler("sine.wav", 1, 16, 0.5, 1, 440, 48000)
-    samples = sample(specs)
+    s = Sampler(1, 16, 0.5, 1, 440, 48000)
 
     # chop the top
-    samples = np.where(samples <= (32767 * (specs.amplitude / 2)),
-                       samples,
-                       (32767 * (specs.amplitude / 2)))
+    s.samples = np.where(s.samples <= (32767 * (s.amplitude / 2)),
+                         s.samples,
+                         (32767 * (s.amplitude / 2)))
     # chop the bottom
     # chop the top
-    samples = np.where(samples >= -(32767 * (specs.amplitude / 2)),
-                       samples,
-                       -(32767 * (specs.amplitude / 2)))
+    s.samples = np.where(s.samples >= -(32767 * (s.amplitude / 2)),
+                         s.samples,
+                         -(32767 * (s.amplitude / 2)))
 
-    samples = samples.astype(np.int16)  # np.Float32
+    s.samples = s.samples.astype(np.int16)  # np.Float32
 
     p = pyaudio.PyAudio()
     # stream = p.open(format=pyaudio.paFloat32,
     stream = p.open(format=pyaudio.paInt16,
                     channels=1,
-                    rate=specs.sample_rate,
+                    rate=s.sample_rate,
                     output=True)
 
     # play the file
-    stream.write(1 * samples.tobytes())  # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
+    stream.write(1 * s.samples.tobytes())  # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
     stream.stop_stream()
     stream.close()
     p.terminate()
 
     # write the file
-    wf.write(specs.file, specs.sample_rate, samples)
+    wf.write("sine.wav", s.sample_rate, s.samples)
 
 
 if __name__ == '__main__':
