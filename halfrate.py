@@ -97,63 +97,24 @@ class ReadWav:
 
     # play the samples with pyaudio
     def play(self):
-        # this should only be used when bytes are set to 16
-        # don't convert the original samples, they will be reused
-        samples = self.samples.astype(np.int16)  # np.Float32, etc
-
         p = pyaudio.PyAudio()
         stream = p.open(format=pyaudio.paInt16,  # paFloat32, etc
                         channels=1,
                         rate=self.sample_rate,
                         output=True)
-        # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
-        stream.write(1 * samples.tobytes())
+        stream.write(self.samples.tobytes())
         stream.stop_stream()
         stream.close()
         p.terminate()
 
-
-
-
-# class for holding the specifications for the audio file
-class Spec:
-    def __init__(self,
-                 channels=1,
-                 bits=16,
-                 amplitude=1.0,
-                 duration=1.0,
-                 frequency=440,
-                 sample_rate=48000,
-                 ):
-        self.channels = channels
-        self.bits = bits
-        self.amplitude = amplitude
-        self.duration = duration
-        self.frequency = frequency
-        self.sample_rate = sample_rate
-
-
-# class which creates samples based on Spec
-class Sampler(Spec):
-    def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
-        super().__init__(channels, bits, amplitude, duration, frequency, sample_rate)
-        # set max value for current number of bits
-        self.max = 2**(bits - 1) - 1
-        self.min = -self.max - 1
-        # generate the samples
-        self.samples = None
-        self.generate_samples()
-
-    def generate_samples(self):
-        self.samples = ((self.amplitude * self.max) *
-                        np.sin((2*np.pi) *
-                               (np.arange(self.sample_rate*self.duration)) *
-                               (self.frequency/self.sample_rate)))
-
     # write the samples to disk
     def write(self, file="default.wav"):
-        samples = self.samples.astype(np.int16)
-        wf.write(file, self.sample_rate, samples)
+        wf.write(file, self.sample_rate, self.samples)
+
+
+
+
+
 
 
 def main():
@@ -161,46 +122,15 @@ def main():
 
     gc = ReadWav("hw2_audio/gc.wav")
     gc.play()
+    gc.write("hw2_audio/gc2.wav")
 
     sine = ReadWav("hw2_audio/sine.wav")
     sine.play()
+    sine.write("hw2_audio/sine2.wav")
 
     synth = ReadWav("hw2_audio/synth.wav")
     synth.play()
-
-    # Part 1
-    #
-    # Channels per frame: 1 (mono)
-    # Sample size: 16 bits
-    # Amplitude: ¼ maximum possible amplitude (-8192..8192)
-    # Duration: one second
-    # Frequency: 440Hz
-    # Sample Rate: 48000 samples per second
-    # s = Sampler(1, 16, 0.25, 1, 440, 48000)
-    # s.play()
-    # s.write("sine2.wav")
-
-    # Part 2
-    #
-    # ½ maximum amplitude (-16384..16384), except:
-    # samples that would be greater than ¼ maximum amplitude (8192) should instead be ¼ maximum amplitude;
-    # samples that would be less than ¼ minimum amplitude (-8192) should instead be ¼ minimum amplitude.
-
-    # update amplitude
-    # could make a new Sampler but why not re-use the old one?
-    # s.amplitude = 0.5
-    # s.generate_samples()
-
-    # chop the top
-    # new_max = s.max / 4
-    # s.samples = np.where(s.samples <= new_max, s.samples, new_max)
-
-    # chop the bottom
-    # new_min = s.min / 4
-    # s.samples = np.where(s.samples >= new_min, s.samples, new_min)
-
-    # s.play()
-    # s.write("clipped2.wav")
+    synth.write("hw2_audio/synth2.wav")
 
 
 if __name__ == '__main__':
