@@ -162,6 +162,12 @@ def main():
     gc = ReadWav("hw2_audio/gc.wav")
     gc.play()
 
+    sine = ReadWav("hw2_audio/sine.wav")
+    sine.play()
+
+    synth = ReadWav("hw2_audio/synth.wav")
+    synth.play()
+
     # Part 1
     #
     # Channels per frame: 1 (mono)
