@@ -1,10 +1,54 @@
 # CS410 Computers, Sound & Music
-# Homework #1
+# Homework #2
 # Christopher Juncker
+
+
+# The Assignment
 #
-# for adding audio files to git:
-# git update-index --assume-unchanged sine.wav
-# git update-index --assume-unchanged clipped.wav
+#   Build a program in your chosen language that will take in a a single-channel
+#   WAV file at some sample rate s and produce a WAV file containing the same signal
+#   at a sample rate half of s. To make my life easier, name the program halfrate —
+#   for example, halfrate.py if you are writing Python.
+#
+#   The repository http://github.com/pdx-cs-sound/hw-resample has some resources you
+#   will want for this assignment. See the README there for details.
+#
+#
+# Filtering
+#
+#   For the filtering, you will need a filter. The coefficients for a good half-band
+#   FIR filter with a transition bandwidth of 0.05 (5% of the maximum input frequency)
+#   are provided in the repo, along with the Python code that generated those coefficients
+#   in case you want to build your own. (If you want to build the filter some other way —
+#   for example, an IIR filter, or some other type of FIR filter — that's fine too.)
+#
+#   Recall that to apply an FIR filter you convolve it with the input signal:
+#
+#       y[i] = Σ(j=0, N-1) a[j]x[i-j]
+#
+#   (Perhaps you are wondering about the indexing: FIR filters are almost always symmetric,
+#   so you can take the coefficients either first-to-last or last-to-first and get the same
+#   answer.)
+#
+#   Note that the beginning and end of the signal get a little messy: you may need to
+#   prepend or append a block of N zeros. The output signal should be the same length as the
+#   input signal — I'm not too fussed about how you handle the beginning and end as long as
+#   this holds and the output sounds reasonable.
+#
+#   If you are using Python, you might want to look into the scipy.signal.lfilter() function,
+#   which can process the whole signal for you really nicely rather than having to write the
+#   convolution by hand.
+#
+#
+# Testing
+#
+#   The files sine.wav, gc.wav and synth.wav are provided in the repo. Downsample each of these,
+#   producing rsine.wav, rgc.wav and rsynth.wav respectively. Verify that the sine wave when
+#   played sounds unaffected by the downsampling, and that the guitar and synth samples when
+#   played sound the same up to the loss of high frequencies. (This loss is pretty subtle at half
+#   rate — 48000 sps is way more than needed for most audio — so the output should sound pretty
+#   much the same as the input.)
+
 
 import numpy as np
 
@@ -30,41 +74,6 @@ import scipy.io.wavfile as wf
 #   then I `pip install The_file_I_downloaded.whl`
 #   (source: https://stackoverflow.com/questions/59467023)
 import pyaudio
-
-
-# The Assignment
-#
-#   1.  Build a program in your chosen language that writes a sine wave to a WAV file named sine.wav
-#       in the current directory. Specifications for your sine wave:
-#
-#           Channels per frame: 1 (mono)
-#           Sample size: 16 bits
-#           Amplitude: ¼ maximum possible amplitude (-8192..8192)
-#           Duration: one second
-#           Frequency: 440Hz
-#           Sample Rate: 48000 samples per second
-#
-#       Generate the samples yourself using your language's sin() function — if your language has no
-#       math library, get a different language.
-#
-#   2.  Extend your program to also write a WAV file named clipped.wav in the current directory.
-#       Generate a sine wave as though it were ½ maximum amplitude (-16384..16384), except: samples
-#       that would be greater than ¼ maximum amplitude (8192) should instead be ¼ maximum amplitude;
-#       samples that would be less than ¼ minimum amplitude (-8192) should instead be ¼ minimum
-#       amplitude. Other than this change, all other parameters remain the same as in Part 1.
-#
-#       Your wave should look "clipped" like this in Audacity. Note the phase: the waveform starts
-#       upward from zero.
-#
-#       Also check the sample rate, amplitude and frequency while you're in Audacity. On Linux the
-#       file command will also tell you the frequency, number of channels, and bits per sample. Or
-#       you can use the wavfile Python utility I built for the course. Lots of options.
-#
-#   3.  Extend your program to also play the same clipped sine wave on your computer's audio output.
-#       Do not shell out to an external program for this: use an audio library.
-#
-#       Each time your program is run, it should do all three of these things.
-#
 
 
 # class for holding the specifications for the audio file
