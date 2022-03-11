@@ -80,20 +80,39 @@ import pyaudio
 class ReadWav:
     def __init__(self, file):
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html
-        self.sample_rate, self.data = wf.read(file)  # file metadata can generate WavFileWarning, ignore
+        self.sample_rate, self.samples = wf.read(file)  # file metadata can generate WavFileWarning, ignore
 
         # calculate the number of channels in the wav file
-        self.channels = 1 if len(self.data.shape) == 1 else self.data.shape[1]
+        self.channels = 1 if len(self.samples.shape) == 1 else self.samples.shape[1]
 
         # calculate the duration of the wav file
-        self.duration = self.data.shape[0] / self.sample_rate
+        self.duration = self.samples.shape[0] / self.sample_rate
 
         # calculate the number of bits in the wav file (bit depth)
         # (scipy doesn't give the bit depth but it can be inferred from the type of np array it creates)
-        if self.data.dtype == "int16":
+        if self.samples.dtype == "int16":
             self.bits = 16
         else:
             self.bits = 0  # add cases if working with other bit depths
+
+    # play the samples with pyaudio
+    def play(self):
+        # this should only be used when bytes are set to 16
+        # don't convert the original samples, they will be reused
+        samples = self.samples.astype(np.int16)  # np.Float32, etc
+
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,  # paFloat32, etc
+                        channels=1,
+                        rate=self.sample_rate,
+                        output=True)
+        # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
+        stream.write(1 * samples.tobytes())
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
+
 
 
 # class for holding the specifications for the audio file
@@ -131,23 +150,6 @@ class Sampler(Spec):
                                (np.arange(self.sample_rate*self.duration)) *
                                (self.frequency/self.sample_rate)))
 
-    # play the samples with pyaudio
-    def play(self):
-        # this should only be used when bytes are set to 16
-        # don't convert the original samples, they will be reused
-        samples = self.samples.astype(np.int16)  # np.Float32, etc
-
-        p = pyaudio.PyAudio()
-        stream = p.open(format=pyaudio.paInt16,  # paFloat32, etc
-                        channels=1,
-                        rate=self.sample_rate,
-                        output=True)
-        # https://stackoverflow.com/questions/8299303 yahweh - tobytes()
-        stream.write(1 * samples.tobytes())
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
-
     # write the samples to disk
     def write(self, file="default.wav"):
         samples = self.samples.astype(np.int16)
@@ -157,7 +159,8 @@ class Sampler(Spec):
 def main():
     print("Homework 2")
 
-    x = ReadWav("hw2_audio/gc.wav")
+    gc = ReadWav("hw2_audio/gc.wav")
+    gc.play()
 
     # Part 1
     #
