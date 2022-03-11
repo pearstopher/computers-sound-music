@@ -1,25 +1,22 @@
-<!--
-A Markdown file README.md with your name near the top. 
-Briefly describe what you did, how it went, and what is still to be done.
--->
-
 # Homework 1
 
 Christopher Juncker
+
+*Prompt: Briefly describe what you did, how it went, and what is still to be done.*
 
 ## Part 1
 
 For Part 1 of this assignment, I created a very simple class to hold the specification
 information provided in the assignment. Then I built a second class from this which used
-this specification information to generate an array of samples. Then I used the 
-`wavefile` functionality included in the `scipy` library to write my array to a file
-named `sine.wav`.
+the specification information to generate an array of samples. After generating the 
+samples, I used the `wavefile` functionality included in the `scipy` library to write 
+my array to a file named `sine.wav`.
 
 ## Part 2
 
 For Part 2, I implemented a few additional lines of code which clipped the samples in
-the array. Then I simply called my function from Part 1 to write the new samples to
-another audio file `clipped.wav` as instructed.
+the array. Then I simply called my function from Part 1 a second time in order to write 
+the new samples to another audio file `clipped.wav` as instructed.
 
 ## Part 3
 
@@ -30,7 +27,6 @@ straight-forward.
 
 ## Conclusion
 
-I believe that I have successfully completed all the required portions of this assignment.
-Below is an image from Audacity of the waveforms of both of my audio files:
+I believe that I have successfully completed all the parts of this assignment. I had
+a lot of fun, and I would say that everything went great!
 
-![Screenshot of Audacity](audacity.png)
