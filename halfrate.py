@@ -135,7 +135,7 @@ class Sampler(Spec):
 
 
 def main():
-    print("Homework 1")
+    print("Homework 2")
 
     # Part 1
     #
@@ -145,9 +145,9 @@ def main():
     # Duration: one second
     # Frequency: 440Hz
     # Sample Rate: 48000 samples per second
-    s = Sampler(1, 16, 0.25, 1, 440, 48000)
-    s.play()
-    s.write("sine2.wav")
+    # s = Sampler(1, 16, 0.25, 1, 440, 48000)
+    # s.play()
+    # s.write("sine2.wav")
 
     # Part 2
     #
@@ -157,19 +157,19 @@ def main():
 
     # update amplitude
     # could make a new Sampler but why not re-use the old one?
-    s.amplitude = 0.5
-    s.generate_samples()
+    # s.amplitude = 0.5
+    # s.generate_samples()
 
     # chop the top
-    new_max = s.max / 4
-    s.samples = np.where(s.samples <= new_max, s.samples, new_max)
+    # new_max = s.max / 4
+    # s.samples = np.where(s.samples <= new_max, s.samples, new_max)
 
     # chop the bottom
-    new_min = s.min / 4
-    s.samples = np.where(s.samples >= new_min, s.samples, new_min)
+    # new_min = s.min / 4
+    # s.samples = np.where(s.samples >= new_min, s.samples, new_min)
 
-    s.play()
-    s.write("clipped2.wav")
+    # s.play()
+    # s.write("clipped2.wav")
 
 
 if __name__ == '__main__':
