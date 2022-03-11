@@ -2,6 +2,9 @@
 # Homework #1
 # Christopher Juncker
 #
+# for adding audio files to git:
+# git update-index --assume-unchanged sine.wav
+# git update-index --assume-unchanged clipped.wav
 
 import numpy as np
 
