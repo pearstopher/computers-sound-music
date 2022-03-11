@@ -138,7 +138,7 @@ def main():
     # Sample Rate: 48000 samples per second
     s = Sampler(1, 16, 0.25, 1, 440, 48000)
     s.play()
-    s.write("sine.wav")
+    s.write("sine2.wav")
 
     # Part 2
     #
@@ -160,7 +160,7 @@ def main():
     s.samples = np.where(s.samples >= new_min, s.samples, new_min)
 
     s.play()
-    s.write("clipped.wav")
+    s.write("clipped2.wav")
 
 
 if __name__ == '__main__':
