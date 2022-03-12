@@ -51,28 +51,8 @@
 
 
 import numpy as np
-
-# wave was suggested but I am exploring alternatives like scipy
-# import wave
-#
-# example of writing a .wav file with scipy
-# https://stackoverflow.com/questions/52477889
 import scipy.io.wavfile as wf
-
-
-# INSTALLING/IMPORTING sounddevice:
-#   (sounddevice was suggested as a simpler alternative to pyaudio)
-#   >pip install sounddevice
-#   import sounddevice
-#
-# INSTALLING/IMPORTING pyaudio:
-#   suggestion to install visual c++ before installing pyaudio
-#   https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
-#
-#   the above didn't work so I tried installing a 'wheel' for my version of python here:
-#   https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
-#   then I `pip install The_file_I_downloaded.whl`
-#   (source: https://stackoverflow.com/questions/59467023)
+from scipy import signal
 import pyaudio
 
 
@@ -112,7 +92,7 @@ class ReadWav:
         wf.write(file, self.sample_rate, self.samples)
 
     # resample with simple filter
-    def simple_filter(self):
+    def simple_halfrate_filter(self):
         new_samples = np.empty(int(len(self.samples) / 2), dtype="int16")
         for i in range(len(new_samples)):
             # special case for first element so I don't try to access index -1
@@ -124,22 +104,30 @@ class ReadWav:
         self.samples = new_samples
         self.sample_rate = int(self.sample_rate/2)
 
+    # resample with "a good half-band FIR filter with a transition bandwidth of 0.05"
+    # https://github.com/pdx-cs-sound/hw-resample
+    def better_halfrate_filter(self):
+        numtaps, beta = signal.kaiserord(-40, 0.05)
+        subband = signal.firwin(numtaps, 0.45, window=('kaiser', beta), scale=True)
 
+        new_samples = np.zeros(int(len(self.samples) / 2), dtype="int16")
+        for i in range(len(new_samples)):
+            for j, coefficient in enumerate(subband):
+                if 0 <= (i*2 - j) < len(self.samples):
+                    new_samples[i] += self.samples[i*2 - j] * coefficient
 
-
-
-
+        self.samples = new_samples
+        self.sample_rate = int(self.sample_rate/2)
 
 
 def main():
     print("Homework 2")
 
     gc = ReadWav("hw2_audio/gc.wav")
+    # gc.play()
+    gc.better_halfrate_filter()
     gc.play()
-    gc.simple_filter()
-    gc.play()
-    gc.write("hw2_audio/gc_halfrate.wav")
-    # honestly they both sound the same to me
+    gc.write("hw2_audio/gc_better_halfrate.wav")
 
     # sine = ReadWav("hw2_audio/sine.wav")
     # sine.play()
