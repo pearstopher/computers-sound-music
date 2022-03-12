@@ -111,6 +111,20 @@ class ReadWav:
     def write(self, file="default.wav"):
         wf.write(file, self.sample_rate, self.samples)
 
+    # resample with simple filter
+    def simple_filter(self):
+        new_samples = np.empty(int(len(self.samples) / 2), dtype="int16")
+        for i in range(len(new_samples)):
+            # special case for first element so I don't try to access index -1
+            if i == 0:
+                new_samples[i] = self.samples[i*2]
+            else:
+                new_samples[i] = int((self.samples[i*2] + self.samples[i*2 - 1]) / 2)
+
+        self.samples = new_samples
+        self.sample_rate = int(self.sample_rate/2)
+
+
 
 
 
@@ -122,15 +136,18 @@ def main():
 
     gc = ReadWav("hw2_audio/gc.wav")
     gc.play()
-    gc.write("hw2_audio/gc2.wav")
+    gc.simple_filter()
+    gc.play()
+    gc.write("hw2_audio/gc_halfrate.wav")
+    # honestly they both sound the same to me
 
-    sine = ReadWav("hw2_audio/sine.wav")
-    sine.play()
-    sine.write("hw2_audio/sine2.wav")
+    # sine = ReadWav("hw2_audio/sine.wav")
+    # sine.play()
+    # sine.write("hw2_audio/sine2.wav")
 
-    synth = ReadWav("hw2_audio/synth.wav")
-    synth.play()
-    synth.write("hw2_audio/synth2.wav")
+    # synth = ReadWav("hw2_audio/synth.wav")
+    # synth.play()
+    # synth.write("hw2_audio/synth2.wav")
 
 
 if __name__ == '__main__':
