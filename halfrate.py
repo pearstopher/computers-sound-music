@@ -130,18 +130,19 @@ def main():
     print("Homework 2")
 
     gc = ReadWav("hw2_audio/gc.wav")
-    # gc.play()
     gc.better_halfrate_filter()
     gc.play()
-    gc.write("hw2_audio/gc_better_halfrate.wav")
+    gc.write("hw2_audio/rgc.wav")
 
-    # sine = ReadWav("hw2_audio/sine.wav")
-    # sine.play()
-    # sine.write("hw2_audio/sine2.wav")
+    sine = ReadWav("hw2_audio/sine.wav")
+    sine.better_halfrate_filter()
+    sine.play()
+    sine.write("hw2_audio/rsine.wav")
 
-    # synth = ReadWav("hw2_audio/synth.wav")
-    # synth.play()
-    # synth.write("hw2_audio/synth2.wav")
+    synth = ReadWav("hw2_audio/synth.wav")
+    synth.better_halfrate_filter()
+    synth.play()
+    synth.write("hw2_audio/rsynth.wav")
 
 
 if __name__ == '__main__':
