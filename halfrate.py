@@ -106,6 +106,7 @@ class ReadWav:
 
     # resample with "a good half-band FIR filter with a transition bandwidth of 0.05"
     # https://github.com/pdx-cs-sound/hw-resample
+    # this is extremely slow
     def better_halfrate_filter(self):
         numtaps, beta = signal.kaiserord(-40, 0.05)
         subband = signal.firwin(numtaps, 0.45, window=('kaiser', beta), scale=True)
@@ -118,6 +119,11 @@ class ReadWav:
 
         self.samples = new_samples
         self.sample_rate = int(self.sample_rate/2)
+
+    # "you might want to look into the scipy.signal.lfilter() function"
+    # this would be fun to look at in the future, especially if it speeds up the calculation
+    # def better_faster_halfrate_filter(self):
+    #   return "maybe later"
 
 
 def main():
