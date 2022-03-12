@@ -33,8 +33,20 @@ I used the same filter coefficients as the ones provided in the course github
 at https://github.com/pdx-cs-sound/hw-resample. I follow the instructions in
 the provided code in order to generate these coefficients at resampling time.
 
+My second filter takes a long time to process the audio since it is has to loop
+through all the coefficients for every index in the new sample. Although it was
+fun to write everything by hand myself, in the future I would still like to
+re-create this filter using the `scipy.signal.lfilter()` function mentioned in
+the assignment handout. It would be fun to figure out and interesting to see
+if it improves the speed of the filtering operation.
+
 
 
 ## Testing
 
-...
+I tested my program by generating lots of copies of the audio files provided in
+the assignment. I listened to each copy to confirm that the half-rate file
+sounded the same as the original (I couldn't really tell a difference even with 
+the "simple" filter to be completely honest). I also inspected each new file in
+Audacity to see how the waveforms looked and to confirm that everything was
+working as intended.
