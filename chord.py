@@ -8,6 +8,49 @@ import numpy as np
 import scipy.io.wavfile as wf
 import pyaudio
 
+# The Assignment
+#
+#   Your program should be called chord — for example, chord.py if you are writing Python.
+#
+#
+# Input
+#
+#   Your program should accept a chord name and a temperament name as command-line arguments.
+#
+#   The chord name will start with a capital letter in the range A-G, optionally followed by
+#   a lowercase b to indicate that the base note is "flattened" (lowered one half-step).
+#   This is the base note of the chord. Treat the base note as specifying a frequency in
+#   octave 5: MIDI key numbers 72 (C) through 83 (B).
+#
+#   The chord name may be optionally followed by a lowercase m to indicate that the chord
+#   should be minor rather than major. See above for a discussion of major and minor chords.
+#
+#   The temperament name will be either "equal" or "just". The just temperament used here will
+#   always be based on the C scale (starts at MIDI key number 72).
+#
+#
+# Output
+#
+#   Your program should create a file called chord-temperament.wav, where chord is the chord
+#   name and temperament is the temperament specified on the command line. The .wav file should
+#   contain single-channel 48000sps 16-bit sample data for one second of the chord. The three
+#   notes of the chord should be three sine waves, each at exactly ⅙ (0.1666…) maximum amplitude:
+#   samples from these notes will be added to form the output waveform.
+#
+#
+# Example
+#
+#   For me, saying python3 chord.py Ebm just at the command line produced the Ebm-just.wav
+#   included in the repo.
+#
+#
+# Info
+#
+#   The repository http://github.com/pdx-cs-sound/hw-chord has some resources you will want for
+#   this assignment. See the README there for details.
+#
+#
+
 
 
 # class for holding the specifications for the audio file
