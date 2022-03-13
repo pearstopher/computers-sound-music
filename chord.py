@@ -161,7 +161,7 @@ class Spec:
 
 
 # class which creates samples based on Spec
-class Sampler(Spec):
+class ChordSampler(Spec):
     # def __init__(self, channels=None, bits=None, amplitude=None, duration=None,
     #             sample_rate=None, chord=None, temperament=None):
     #    super().__init__(channels, bits, amplitude, duration, sample_rate, chord, temperament)
@@ -216,7 +216,7 @@ class Sampler(Spec):
 def main():
     print("Homework 3")
 
-    s = Sampler()
+    s = ChordSampler()
 
     for i in range(5):
         s.set("C", "equal")
