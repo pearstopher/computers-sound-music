@@ -52,29 +52,107 @@ import pyaudio
 #
 
 
-
 # class for holding the specifications for the audio file
 class Spec:
     def __init__(self,
                  channels=1,
                  bits=16,
-                 amplitude=1.0,
+                 amplitude=0.167,
                  duration=1.0,
-                 frequency=440,
                  sample_rate=48000,
+                 chord="Cbm",
+                 temperament="just",
                  ):
         self.channels = channels
         self.bits = bits
         self.amplitude = amplitude
         self.duration = duration
-        self.frequency = frequency
         self.sample_rate = sample_rate
+        self.chord = chord
+        self.temperament = temperament
+
+    # get chord and temperament from user input
+    def input(self):
+        c_t = input("Please Enter a chord and temperament (ex1. 'A equal', ex2. 'Ebm just'): ")
+        self.chord, self.temperament = c_t.split()
+
+    # process chord and temperament
+    def process_c_t(self):
+
+        # name_to_key and just_ratios from:
+        # https://github.com/pdx-cs-sound/hw-chord/blob/master/tables.py
+        # Conversion table: Note names to MIDI key numbers.
+        name_to_key = {
+            "C": 72,
+            "Db": 73,
+            "D": 74,
+            "Eb": 75,
+            "E": 76,
+            "F": 77,
+            "Gb": 78,
+            "G": 79,
+            "Ab": 80,
+            "A": 81,
+            "Bb": 82,
+            "B": 83,
+        }
+        just_ratios = [
+            1,
+            16/15,
+            9/8,
+            6/5,
+            5/4,
+            4/3,
+            45/32,
+            3/2,
+            8/5,
+            5/3,
+            9/5,
+            15/8,
+        ]
+
+        # https://gist.github.com/YuxiUx/ef84328d95b10d0fcbf537de77b936cd
+        def midi_to_frequency(note):
+            a = 440
+            return (a / 32) * (2 ** ((note - 9) / 12))
+
+        notes = []
+        freqs = []
+
+        # get frequency of first note
+        if len(self.chord) == 1 or (len(self.chord) == 2 and self.chord[1] == "m"):
+            notes.append(name_to_key(self.chord[0]))
+            freqs.append(midi_to_frequency(notes[0]))
+        else:
+            notes.append(name_to_key(self.chord[0] - 1))
+            freqs.append(midi_to_frequency(notes[0]))
+
+        # get frequency of second note
+        if (len(self.chord) == 2 and self.chord[1] == "m") or \
+                (len(self.chord) == 3 and self.chord[2] == "m"):
+            if self.temperament == "equal":
+                notes.append(notes[0] + 3)
+                freqs.append(midi_to_frequency(notes[1]))
+            else:
+                freqs.append(freqs[0] * just_ratios[3])
+        else:
+            if self.temperament == "equal":
+                notes.append(notes[0] + 4)
+                freqs.append(midi_to_frequency(notes[1]))
+            else:
+                freqs.append(freqs[0] * just_ratios[4])
+
+        # get frequency of third node
+
+
+
+
 
 
 # class which creates samples based on Spec
 class Sampler(Spec):
-    def __init__(self, channels, bits, amplitude, duration, frequency, sample_rate):
-        super().__init__(channels, bits, amplitude, duration, frequency, sample_rate)
+    def __init__(self, channels, bits, amplitude, duration, sample_rate, chord, temperament):
+        super().__init__(channels, bits, amplitude, duration, sample_rate, chord, temperament)
         # set max value for current number of bits
         self.max = 2**(bits - 1) - 1
         self.min = -self.max - 1
@@ -112,7 +190,7 @@ class Sampler(Spec):
 
 
 def main():
-    print("Homework 1")
+    print("Homework 3")
 
     # Part 1
     #
