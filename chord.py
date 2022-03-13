@@ -79,9 +79,8 @@ class Spec:
         self.notes, self.freqs = self.process_c_t()
 
     # get chord and temperament from argument
-    def set(self, chord, temperament):
-        self.chord = chord
-        self.temperament = temperament
+    def set(self, c_t):
+        self.chord, self.temperament = c_t.split()
         self.notes, self.freqs = self.process_c_t()
 
     # process chord and temperament
@@ -208,7 +207,8 @@ class ChordSampler(Spec):
         p.terminate()
 
     # write the samples to disk
-    def write(self, file="default.wav"):
+    def write(self):
+        file = self.chord + "-" + self.temperament + ".wav"
         samples = self.samples.astype(np.int16)
         wf.write(file, self.sample_rate, samples)
 
@@ -218,22 +218,27 @@ def main():
 
     s = ChordSampler()
 
-    for i in range(5):
-        s.set("C", "equal")
-        s.generate_samples()
-        s.play()
+    s.input()
+    s.generate_samples()
+    s.write()
 
-        s.set("F", "equal")
-        s.generate_samples()
-        s.play()
-
-        s.set("Am", "equal")
-        s.generate_samples()
-        s.play()
-
-        s.set("G", "equal")
-        s.generate_samples()
-        s.play()
+    # play a song with some nice chords :)
+    # for i in range(5):
+    #     s.set("C", "equal")
+    #     s.generate_samples()
+    #     s.play()
+    #
+    #     s.set("F", "equal")
+    #     s.generate_samples()
+    #     s.play()
+    #
+    #     s.set("Am", "equal")
+    #     s.generate_samples()
+    #     s.play()
+    #
+    #     s.set("G", "equal")
+    #     s.generate_samples()
+    #     s.play()
 
 
 if __name__ == '__main__':
