@@ -60,7 +60,7 @@ class Spec:
                  amplitude=0.167,
                  duration=1.0,
                  sample_rate=48000,
-                 chord="Cbm",
+                 chord="Am",
                  temperament="just",
                  ):
         self.channels = channels
@@ -70,11 +70,19 @@ class Spec:
         self.sample_rate = sample_rate
         self.chord = chord
         self.temperament = temperament
+        self.notes, self.freqs = self.process_c_t()
 
     # get chord and temperament from user input
     def input(self):
         c_t = input("Please Enter a chord and temperament (ex1. 'A equal', ex2. 'Ebm just'): ")
         self.chord, self.temperament = c_t.split()
+        self.notes, self.freqs = self.process_c_t()
+
+    # get chord and temperament from argument
+    def set(self, chord, temperament):
+        self.chord = chord
+        self.temperament = temperament
+        self.notes, self.freqs = self.process_c_t()
 
     # process chord and temperament
     def process_c_t(self):
@@ -121,10 +129,10 @@ class Spec:
 
         # get frequency of first note
         if len(self.chord) == 1 or (len(self.chord) == 2 and self.chord[1] == "m"):
-            notes.append(name_to_key(self.chord[0]))
+            notes.append(name_to_key[self.chord[0]])
             freqs.append(midi_to_frequency(notes[0]))
         else:
-            notes.append(name_to_key(self.chord[0] - 1))
+            notes.append(name_to_key[self.chord[0] + self.chord[1]])
             freqs.append(midi_to_frequency(notes[0]))
 
         # get frequency of second note
@@ -142,29 +150,45 @@ class Spec:
             else:
                 freqs.append(freqs[0] * just_ratios[4])
 
-        # get frequency of third node
+        # get frequency of third note
+        if self.temperament == "equal":
+            notes.append(notes[0] + 7)
+            freqs.append(midi_to_frequency(notes[2]))
+        else:
+            freqs.append(freqs[0] * just_ratios[7])
 
-
-
-
+        return notes, freqs
 
 
 # class which creates samples based on Spec
 class Sampler(Spec):
-    def __init__(self, channels, bits, amplitude, duration, sample_rate, chord, temperament):
-        super().__init__(channels, bits, amplitude, duration, sample_rate, chord, temperament)
+    # def __init__(self, channels=None, bits=None, amplitude=None, duration=None,
+    #             sample_rate=None, chord=None, temperament=None):
+    #    super().__init__(channels, bits, amplitude, duration, sample_rate, chord, temperament)
+    def __init__(self):
+        super().__init__()
         # set max value for current number of bits
-        self.max = 2**(bits - 1) - 1
+        self.max = 2**(self.bits - 1) - 1
         self.min = -self.max - 1
         # generate the samples
         self.samples = None
         self.generate_samples()
 
     def generate_samples(self):
-        self.samples = ((self.amplitude * self.max) *
-                        np.sin((2*np.pi) *
-                               (np.arange(self.sample_rate*self.duration)) *
-                               (self.frequency/self.sample_rate)))
+        s1 = ((self.amplitude * self.max) *
+              np.sin((2*np.pi) *
+              (np.arange(self.sample_rate*self.duration)) *
+              (self.freqs[0]/self.sample_rate)))
+        s2 = ((self.amplitude * self.max) *
+              np.sin((2*np.pi) *
+              (np.arange(self.sample_rate*self.duration)) *
+              (self.freqs[1]/self.sample_rate)))
+        s3 = ((self.amplitude * self.max) *
+              np.sin((2*np.pi) *
+              (np.arange(self.sample_rate*self.duration)) *
+              (self.freqs[2]/self.sample_rate)))
+
+        self.samples = s1 + s2 + s3
 
     # play the samples with pyaudio
     def play(self):
@@ -192,39 +216,24 @@ class Sampler(Spec):
 def main():
     print("Homework 3")
 
-    # Part 1
-    #
-    # Channels per frame: 1 (mono)
-    # Sample size: 16 bits
-    # Amplitude: ¼ maximum possible amplitude (-8192..8192)
-    # Duration: one second
-    # Frequency: 440Hz
-    # Sample Rate: 48000 samples per second
-    s = Sampler(1, 16, 0.25, 1, 440, 48000)
-    s.play()
-    s.write("sine2.wav")
+    s = Sampler()
 
-    # Part 2
-    #
-    # ½ maximum amplitude (-16384..16384), except:
-    # samples that would be greater than ¼ maximum amplitude (8192) should instead be ¼ maximum amplitude;
-    # samples that would be less than ¼ minimum amplitude (-8192) should instead be ¼ minimum amplitude.
+    for i in range(5):
+        s.set("C", "equal")
+        s.generate_samples()
+        s.play()
 
-    # update amplitude
-    # could make a new Sampler but why not re-use the old one?
-    s.amplitude = 0.5
-    s.generate_samples()
+        s.set("F", "equal")
+        s.generate_samples()
+        s.play()
 
-    # chop the top
-    new_max = s.max / 4
-    s.samples = np.where(s.samples <= new_max, s.samples, new_max)
+        s.set("Am", "equal")
+        s.generate_samples()
+        s.play()
 
-    # chop the bottom
-    new_min = s.min / 4
-    s.samples = np.where(s.samples >= new_min, s.samples, new_min)
-
-    s.play()
-    s.write("clipped2.wav")
+        s.set("G", "equal")
+        s.generate_samples()
+        s.play()
 
 
 if __name__ == '__main__':
