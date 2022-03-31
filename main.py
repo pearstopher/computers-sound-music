@@ -1,10 +1,6 @@
 # CS410 Computers, Sound & Music
 # Homework #1
 # Christopher Juncker
-#
-# for adding audio files to git:
-# git update-index --assume-unchanged sine.wav
-# git update-index --assume-unchanged clipped.wav
 
 import numpy as np
 
@@ -138,7 +134,7 @@ def main():
     # Sample Rate: 48000 samples per second
     s = Sampler(1, 16, 0.25, 1, 440, 48000)
     s.play()
-    s.write("sine2.wav")
+    s.write("sine.wav")
 
     # Part 2
     #
@@ -160,7 +156,7 @@ def main():
     s.samples = np.where(s.samples >= new_min, s.samples, new_min)
 
     s.play()
-    s.write("clipped2.wav")
+    s.write("clipped.wav")
 
 
 if __name__ == '__main__':
