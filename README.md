@@ -2,7 +2,21 @@
 
 Christopher Juncker
 
-*Prompt: Briefly describe what you did, how it went, and what is still to be done.*
+*Prompt: Briefly describe what you did, how it went, and what is still to be done. 
+Please include detailed build instructions.*
+
+
+## Instructions
+
+
+### Install
+```shell
+python -m pip install numpy scipy pyaudio
+```
+### Run
+```shell
+python main.py
+```
 
 ## Part 1
 
