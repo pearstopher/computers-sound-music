@@ -110,9 +110,13 @@ def main():
     fs = 48000
     f, t, zxx = signal.stft(s.samples, fs=fs, nperseg=fs/2)
 
+    # lets just do something really gross to see if this works:
+    #   change the pitch by simply shifting the bins a little
+    zxx2 = zxx[14:]  # 14 = meaningless, sounds like about a half-step
+
     # apply Inverse Short Time Fourier Transform (ISTFT) to re-create samples
     old_samples = np.copy(s.samples)
-    _, new_samples = signal.istft(zxx, fs)
+    _, new_samples = signal.istft(zxx2, fs)
     s.samples = np.copy(new_samples)
 
     # play the reconstructed sin wave
