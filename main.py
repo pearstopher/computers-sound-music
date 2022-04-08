@@ -8,7 +8,6 @@ import numpy as np
 import scipy.io.wavfile as wf
 import scipy.signal as signal
 import pyaudio
-import matplotlib.pyplot as plt
 
 
 # class for holding the specifications for the audio file
@@ -18,9 +17,6 @@ class Samples:
         self.channels = 1
         self.bits = 16
         self.sample_rate = 48000
-
-        self.max = 2**(self.bits - 1) - 1
-        self.min = -self.max
 
         # load the two tracks
         _, self.track_1 = wf.read("frequency_guitar.wav")
@@ -59,7 +55,7 @@ def main():
     s.play()
 
     # apply Short Time Fourier Transform (STFT) to samples
-    f, t, zxx = signal.stft(s.master, fs=s.sample_rate, nperseg=s.sample_rate/2)
+    f, t, zxx = signal.stft(s.master, fs=s.sample_rate, nperseg=int(s.sample_rate/2))
 
     # shift all the frequencies up(+) or down(-) by a random amount
     shift = -30
@@ -71,9 +67,7 @@ def main():
         zxx[shift:0] = 0
 
     # apply Inverse Short Time Fourier Transform (ISTFT) to re-create samples
-    old_samples = np.copy(s.master)
-    _, new_samples = signal.istft(zxx, s.sample_rate)
-    s.master = np.copy(new_samples)
+    _, s.master = signal.istft(zxx, s.sample_rate)
 
     # play the reconstructed sin wave
     s.play()
