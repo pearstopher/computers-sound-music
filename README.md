@@ -1,11 +1,5 @@
-playing with fourier transform
+1. reads in two audio tracks (guitar, vocals)
 
-goal:
+2. combines them into single track and plays song
 
-1. do the STFT
-
-2. change stuff???
-
-3. do the inverse STFT
-
-4. see what happens
+3. shifts pitch down horribly and plays again for fun

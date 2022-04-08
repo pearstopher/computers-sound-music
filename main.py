@@ -87,7 +87,7 @@ def main():
     f, t, zxx = signal.stft(s.master, fs=fs, nperseg=fs/2)
 
     # shift all the frequencies up(+) or down(-) by a random amount
-    shift = 20
+    shift = -30
     zxx = np.roll(zxx, shift, axis=0)  # axis 0 = time, axis 1 = frequency
     # zero out the elements that roll over/under
     if shift > 0:
