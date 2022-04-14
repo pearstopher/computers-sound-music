@@ -50,6 +50,7 @@
 #   much the same as the input.)
 
 
+import sys
 import numpy as np
 import scipy.io.wavfile as wf
 from scipy import signal
@@ -127,17 +128,15 @@ class ReadWav:
 def main():
     print("Homework 2")
 
-    gc = ReadWav("hw2_audio/gc.wav")
-    gc.better_halfrate_filter()
-    gc.write("hw2_audio/rgc.wav")
-
-    sine = ReadWav("hw2_audio/sine.wav")
-    sine.better_halfrate_filter()
-    sine.write("hw2_audio/rsine.wav")
-
-    synth = ReadWav("hw2_audio/synth.wav")
-    synth.better_halfrate_filter()
-    synth.write("hw2_audio/rsynth.wav")
+    # run with any number of command line arguments:
+    #   halfrate.py gc.wav
+    #   halfrate.py gc.wav sine.wav synth.wav
+    #   etc
+    for file in sys.argv[1:]:
+        # reads from and writes to the current directory
+        samples = ReadWav(file)
+        samples.better_halfrate_filter()
+        samples.write("r" + file)
 
 
 if __name__ == '__main__':
