@@ -117,11 +117,26 @@ class ReadWav:
         # scale: True = ??? I don't understand the scale argument yet. What is "unity"?
         subband = signal.firwin(numtaps, 0.45, window=('kaiser', beta), scale=True)
 
-        # when I originally did this with loops, it took FOREVER
-        # np.convolve and signal.convolve <3 <3 <3
-        self.samples = signal.convolve(self.samples, subband)
-        self.samples = self.samples.astype("int16")  # lost my int16s
-        self.samples = self.samples[0::2]
+        # "Even if you are using Python, please write the convolution code by hand for this assignment"
+        #
+        # 1. Create an new array of half the size
+        new_samples = np.zeros(int(len(self.samples) / 2), dtype="int16")
+        # 2. Loop through the new array to fill it (looping through the original would be twice as much work)
+        for i in range(len(new_samples)):
+            # 3. Loop through the coefficients
+            for j, coefficient in enumerate(subband):
+                # 4. Convolve the original samples with the subband
+                # "- int(len(subband) / 2))" shifts the subband so that it is centered on the current sample
+                if 0 <= (i * 2 + j - int(len(subband) / 2)) < len(self.samples):
+                    new_samples[i] += self.samples[i * 2 + j - int(len(subband) / 2)] * coefficient
+                # 5. Simply ignore if the index is out of range to simulate padding with 0s
+        self.samples = new_samples
+
+        # np.convolve and signal.convolve do this so much faster <3 <3 <3
+        # self.samples = signal.convolve(self.samples, subband)
+        # self.samples = self.samples.astype("int16")  # lost my int16s
+        # self.samples = self.samples[0::2]
+
         self.sample_rate = int(self.sample_rate/2)
 
 
