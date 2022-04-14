@@ -4,6 +4,23 @@ Christopher Juncker
 
 *Prompt: Briefly describe what you did, how it went, and what is still to be done.*
 
+## Instructions
+
+You must have `numpy` and `scipy` installed for the program to function correctly.
+
+This program is intended to be run with command line arguments. It can resample one
+file at a time:
+```shell
+> python halfrate.py file.wav
+```
+Or, if you want, it can also do multiple files at once:
+```shell
+> python halfrate.py file1.wav file2.wav file3.wav
+```
+
+The filenames which are supplied must each correspond to a file which exists in the 
+same directory as the `halfrate.py` script. Each file will be down-sampled to half
+of the original sample rate and saved with an "r" prepended to the original file name.
 
 ## Setup
 
