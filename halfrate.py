@@ -53,7 +53,6 @@
 import numpy as np
 import scipy.io.wavfile as wf
 from scipy import signal
-import pyaudio
 
 
 # class for reading Audio file
@@ -75,18 +74,6 @@ class ReadWav:
         else:
             self.bits = 0  # add cases if working with other bit depths
 
-    # play the samples with pyaudio
-    def play(self):
-        p = pyaudio.PyAudio()
-        stream = p.open(format=pyaudio.paInt16,  # paFloat32, etc
-                        channels=1,
-                        rate=self.sample_rate,
-                        output=True)
-        stream.write(self.samples.tobytes())
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
-
     # write the samples to disk
     def write(self, file="default.wav"):
         wf.write(file, self.sample_rate, self.samples)
@@ -106,24 +93,35 @@ class ReadWav:
 
     # resample with "a good half-band FIR filter with a transition bandwidth of 0.05"
     # https://github.com/pdx-cs-sound/hw-resample
-    # this is extremely slow
     def better_halfrate_filter(self):
+        # this generates the filter window parameters
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.kaiserord.html
+        #
+        # Parameters:
+        #   ripple: -40 = upper bound for deviation between Desired and Actual frequency response
+        #   width: 0.05 = width of transition band, expressed as a fraction of nyquist frequency
+        #
+        # Return values:
+        #   numtaps = length of window, number of samples
+        #   beta = number which determines window shape
+        #       (often expressed as "alpha", where beta = pi * alpha)
         numtaps, beta = signal.kaiserord(-40, 0.05)
+
+        # this accepts the window parameters and generates the array of coefficients
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html
+        #
+        # cutoff: 0.45 = the cutoff frequency.
+        #   0.45 = 0.5 max frequency - 0.05 transition band
+        #
+        # scale: True = ??? I don't understand the scale argument yet. What is "unity"?
         subband = signal.firwin(numtaps, 0.45, window=('kaiser', beta), scale=True)
 
-        new_samples = np.zeros(int(len(self.samples) / 2), dtype="int16")
-        for i in range(len(new_samples)):
-            for j, coefficient in enumerate(subband):
-                if 0 <= (i*2 - j) < len(self.samples):
-                    new_samples[i] += self.samples[i*2 - j] * coefficient
-
-        self.samples = new_samples
+        # when I originally did this with loops, it took FOREVER
+        # np.convolve and signal.convolve <3 <3 <3
+        self.samples = signal.convolve(self.samples, subband)
+        self.samples = self.samples.astype("int16")  # lost my int16s
+        self.samples = self.samples[0::2]
         self.sample_rate = int(self.sample_rate/2)
-
-    # "you might want to look into the scipy.signal.lfilter() function"
-    # this would be fun to look at in the future, especially if it speeds up the calculation
-    # def better_faster_halfrate_filter(self):
-    #   return "maybe later"
 
 
 def main():
@@ -131,17 +129,14 @@ def main():
 
     gc = ReadWav("hw2_audio/gc.wav")
     gc.better_halfrate_filter()
-    gc.play()
     gc.write("hw2_audio/rgc.wav")
 
     sine = ReadWav("hw2_audio/sine.wav")
     sine.better_halfrate_filter()
-    sine.play()
     sine.write("hw2_audio/rsine.wav")
 
     synth = ReadWav("hw2_audio/synth.wav")
     synth.better_halfrate_filter()
-    synth.play()
     synth.write("hw2_audio/rsynth.wav")
 
 
