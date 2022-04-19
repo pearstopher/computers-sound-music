@@ -53,6 +53,7 @@ def main():
     # play the song
     s = Samples()
     s.play()
+    s.write("frequency_song.wav")
 
     # apply Short Time Fourier Transform (STFT) to samples
     f, t, zxx = signal.stft(s.master, fs=s.sample_rate, nperseg=int(s.sample_rate/2))
@@ -71,6 +72,8 @@ def main():
 
     # play the reconstructed sin wave
     s.play()
+    s.write("frequency_song_pitch_down.wav")
+
 
 
 if __name__ == '__main__':
