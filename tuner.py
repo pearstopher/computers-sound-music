@@ -43,7 +43,8 @@ if len(sys.argv) == 2:
     largest = np.argmax(abs(f))
 
     # "5. Report the center frequency of that bin.
-    print(largest * (sample_rate / WINDOW))
+    # "...with a maximum precision of 1 decimal place.
+    print("{0:.1f}".format(largest * (sample_rate / WINDOW)))
 
 
 # MODE 2
@@ -88,7 +89,7 @@ if len(sys.argv) == 1:
         largest = np.argmax(abs(f))
 
         # "5. Report the center frequency of that bin.
-        print(largest * (RATE / BUFFER))
+        print("{0:.1f}".format(largest * (RATE / BUFFER)))
 
     iStream.stop_stream()
     iStream.close()
