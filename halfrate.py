@@ -137,6 +137,12 @@ class ReadWav:
         # self.samples = self.samples.astype("int16")  # lost my int16s
         # self.samples = self.samples[0::2]
 
+        # can also loop faster using np.dot in the inner loop
+        # (new_samples = half the size of the original sample array)
+        # s = len(subband)
+        # for i in range(len(new_samples) - s):
+        #     new_samples[i] = np.dot(self.samples[i*2:i*2+s], subband)
+
         self.sample_rate = int(self.sample_rate/2)
 
 
