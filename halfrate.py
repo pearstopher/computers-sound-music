@@ -120,7 +120,7 @@ class ReadWav:
         # "Even if you are using Python, please write the convolution code by hand for this assignment"
         #
         # 1. Create an new array of half the size
-        new_samples = np.zeros(int(len(self.samples) / 2), dtype="int16")
+        new_samples = np.zeros(int(len(self.samples) / 2), dtype="float64")
         # 2. Loop through the new array to fill it (looping through the original would be twice as much work)
         for i in range(len(new_samples)):
             # 3. Loop through the coefficients
@@ -131,6 +131,7 @@ class ReadWav:
                     new_samples[i] += self.samples[i * 2 + j - int(len(subband) / 2)] * coefficient
                 # 5. Simply ignore if the index is out of range to simulate padding with 0s
         self.samples = new_samples
+        self.samples = self.samples.astype("int16")
 
         # np.convolve and signal.convolve do this so much faster <3 <3 <3
         # self.samples = signal.convolve(self.samples, subband)
