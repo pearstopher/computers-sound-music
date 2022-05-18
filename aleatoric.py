@@ -7,6 +7,7 @@ import numpy as np
 import scipy.io.wavfile as wf
 import pyaudio
 import math
+import argparse
 
 # THE ASSIGNMENT
 # You will build a generator that plays a sequence of notes, most of which are randomly
@@ -100,9 +101,9 @@ import math
 #
 #
 
-##################
+###################
 # Helper Functions
-##################
+###################
 
 
 # frequency formula: the frequency f for MIDI key number k
@@ -122,6 +123,38 @@ def sine_wave(f, t):
     y = math.sin(2*math.pi*f*t)
     return y
 
+
+###########
+# COMMANDS
+###########
+
+parser = argparse.ArgumentParser()
+
+# --root KEYNUMBER: Use MIDI key number KEYNUMBER as the root tone of the scale. [48]
+parser.add_argument("--root", metavar="KEYNUMBER", type=int, default=48,
+                    help="Use MIDI key number KEYNUMBER as the root tone of the scale. [48]")
+
+# --beats SIG: Use a “time signature” of SIG beats per measure. [8]
+parser.add_argument("--beats", metavar="SIG", type=int, default=8,
+                    help="Use a “time signature” of SIG beats per measure.")
+
+# --bpm BPM: Use a beat frequency of BPM beats per minute. [90.0]
+parser.add_argument("--bpm", metavar="BPM", type=float, default=90.0,
+                    help="Use a beat frequency of BPM beats per minute.")
+
+# --ramp FRAC: Use FRAC as a fraction of the beat time for the attack/release time of the note envelope. [0.5]
+parser.add_argument("--ramp", metavar="FRAC", type=float, default=0.5,
+                    help="Use FRAC as a fraction of the beat time for the attack/release time of the note envelope.")
+
+# --accent VOLUME: Use the given VOLUME from 0..10 as the note volume for the first beat of each measure. [5.0]
+parser.add_argument("--accent", metavar="VOLUME", type=float, default=5.0,
+                    help="Use the given VOLUME (0..10) as the note volume for the first beat of each measure.")
+
+# --volume VOLUME: Use the given VOLUME from 0..10 as the note volume for the unaccented beats of each measure. [8.0]
+parser.add_argument("--volume", metavar="VOLUME", type=int, default=8.0,
+                    help="Use the given VOLUME (0..10) as the note volume for the unaccented beats of each measure.")
+
+args = parser.parse_args()
 
 
 
