@@ -3,53 +3,129 @@
 # Christopher Juncker
 #
 
-
 import numpy as np
 import scipy.io.wavfile as wf
 import pyaudio
+import math
 
-# The Assignment
+# THE ASSIGNMENT
+# You will build a generator that plays a sequence of notes, most of which are randomly
+# selected from a major scale.
 #
-#   Your program should be called chord — for example, chord.py if you are writing Python.
+# NOTE PITCHES
+# Your program will continuously play random measures of music. Each measure will start
+# with the root note of the major scale, and then continue with randomly-selected notes
+# of the major scale for the remaining beats. These randomly-selected tones should be
+# chosen from scale notes 2..8.
+#
+# For example, if the user has selected a C[3] major scale (key 72) and four beats per
+# measure, your notes for a measure might be
+#
+#   C[3] (key 72)
+#   F[3] (key 77)
+#   C[4] (key 84)
+#   A[4] (key 81)
+#
+# BEAT TIME
+# Beats will be played at a tempo (time per beat) selected by the user. Tempo is normally
+# specified in “beats per minute” (BPM) which is a bit of an annoying unit. Divide 60 by
+# BPM to get seconds per beat.
+#
+# MEASURE ACCENTS AND VOLUME
+# The first beat of each measure will be accented in two ways.
+#
+# The first beat will be a square wave tone, the rest of the beats will be sine wave tones.
+#
+# The first beat may have a different volume than the remaining beats. The user can select
+# the volume for the first beat and for the remaining beats.
+#
+# As we have discussed many times, the volume of a note is logarithmic in the amplitude of
+# that note. For this assignment, the user will be able to set a volume in the range 0 to 10,
+# where 10 is full volume and 0 is 60dB down from that volume. (This means that the volume at
+# 0 is not quite 0, but quiet enough to hardly hear. See this great TI Blog Post
+# (https://e2e.ti.com/blogs_/archives/b/thesignal/posts/logarithmic-potentiometers) for an
+# interesting discussion on this topic.) The formula you want for a given amplitude  (0..1)
+# given a volume knob setting  (0..10) is:
+#
+#   A = 10 * [ (-6*(10 - v)) / 20 ]
+#
+# For our example, with user volumes 5 and 8, the output will thus be
+#
+#   C[3] (key 72), square wave, A = 0.03162277660168379
+#   F[3] (key 77), sine wave, A = 0.251188643150958
+#   C[4] (key 84), sine wave, A = 0.251188643150958
+#   A[4] (key 81), sine wave, A = 0.251188643150958
+#
+# NOTE ENVELOPE
+# If you don’t use some kind of envelope, played notes will click at the start and end. Use a
+# trapezoidal attack-release envelope: ramp the envelope up from 0.0 to 1.0 over the attack
+# period at the start of the note, and ramp back down from 1.0 to 0.0 over the release period
+# at the end of the note. Make the attack and release times the same. Graphically, it looks
+# like this:
+#    _______
+#   /       \   (Trapezoidal AR Envelope)
+#
+# instead of this:
+#    _______
+#   |       |
+#
+# Apply this envelope to the note by multiplying sample-by-sample.
+#
+# PSEUDOCODE
+# In the end, your program should look roughly like this:
+#
+#   repeat until interrupted
+#       play root frequency for beat interval (square wave, accent volume, ramp)
+#       for remaining beats
+#           k ← random key from scale up 1 to 8 scale steps from root
+#           play frequency k for beat interval (sine wave, volume, ramp)
+#
+# COMMAND
+# Your program should be named aleatoric — for example, aleatoric.py if you are writing Python,
+# or aleatoric.cpp if you are writing C++.
+#
+# Your program should accept any combination of five command-line arguments. The default value
+# to use if the argument is not given is in square brackets. Default numbers without a decimal
+# point indicate integer arguments; default numbers with a decimal point indicate floating-point
+# arguments.
+#
+#   --root KEYNUMBER: Use MIDI key number KEYNUMBER as the root tone of the scale. [48]
+#   --beats SIG: Use a “time signature” of SIG beats per measure. [8]
+#   --bpm BPM: Use a beat frequency of BPM beats per minute. [90.0]
+#   --ramp FRAC: Use FRAC as a fraction of the beat time for the attack and release time for the note envelope. [0.5]
+#   --accent VOLUME: Use the given VOLUME from 0..10 as the note volume for the first beat of each measure. [5.0]
+#   --volume VOLUME: Use the given VOLUME from 0..10 as the note volume for the unaccented beats of each measure. [8.0]
+#
+# Keep the program textually quiet: no output should be printed during operation.
 #
 #
-# Input
-#
-#   Your program should accept a chord name and a temperament name as command-line arguments.
-#
-#   The chord name will start with a capital letter in the range A-G, optionally followed by
-#   a lowercase b to indicate that the base note is "flattened" (lowered one half-step).
-#   This is the base note of the chord. Treat the base note as specifying a frequency in
-#   octave 5: MIDI key numbers 72 (C) through 83 (B).
-#
-#   The chord name may be optionally followed by a lowercase m to indicate that the chord
-#   should be minor rather than major. See above for a discussion of major and minor chords.
-#
-#   The temperament name will be either "equal" or "just". The just temperament used here will
-#   always be based on the C scale (starts at MIDI key number 72).
-#
-#
-# Output
-#
-#   Your program should create a file called chord-temperament.wav, where chord is the chord
-#   name and temperament is the temperament specified on the command line. The .wav file should
-#   contain single-channel 48000sps 16-bit sample data for one second of the chord. The three
-#   notes of the chord should be three sine waves, each at exactly ⅙ (0.1666…) maximum amplitude:
-#   samples from these notes will be added to form the output waveform.
-#
-#
-# Example
-#
-#   For me, saying python3 chord.py Ebm just at the command line produced the Ebm-just.wav
-#   included in the repo.
-#
-#
-# Info
-#
-#   The repository http://github.com/pdx-cs-sound/hw-chord has some resources you will want for
-#   this assignment. See the README there for details.
-#
-#
+
+##################
+# Helper Functions
+##################
+
+
+# frequency formula: the frequency f for MIDI key number k
+def midi_to_freq(k):
+    f = 440 * 2**((k-69)/12)
+    return f
+
+
+# formula for the value y of a square wave with frequency f at time t
+def square_wave(f, t):
+    y = 4 * math.floor(f*t) - 2 * math.floor(2*f*t) + 1
+    return y
+
+
+# formula for the value y of a sine wave with frequency f at time t:
+def sine_wave(f, t):
+    y = math.sin(2*math.pi*f*t)
+    return y
+
+
+
+
+
 
 
 # class for holding the specifications for the audio file
