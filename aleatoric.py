@@ -237,7 +237,6 @@ stream = p.open(format=pyaudio.paFloat32,
 while True:
     # generate the notes for this measure
     notes = generate_notes()
-    print(notes)
 
     # "play root frequency for beat interval (square wave, accent volume, ramp)
     bps = args.bpm/60  # beats per second
