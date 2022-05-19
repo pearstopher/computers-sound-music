@@ -8,6 +8,7 @@ import scipy.io.wavfile as wf
 import pyaudio
 import math
 import argparse
+import random
 
 # THE ASSIGNMENT
 # You will build a generator that plays a sequence of notes, most of which are randomly
@@ -155,6 +156,84 @@ parser.add_argument("--volume", metavar="VOLUME", type=int, default=8.0,
                     help="Use the given VOLUME (0..10) as the note volume for the unaccented beats of each measure.")
 
 args = parser.parse_args()
+
+
+###############
+# NOTE PITCHES
+###############
+
+# Each measure will start with the root note of the major scale, and then continue
+# with randomly-selected notes of the major scale for the remaining beats. These
+# randomly-selected tones should be chosen from scale notes 2..8.
+def random_notes():
+    # create an array of random midi notes
+    notes = np.random.randint(1, 9, size=args.sig)
+
+    # set the first element to the root
+    notes[0] = args.root
+
+    # convert the midi notes to frequencies
+    notes = midi_to_freq(notes)
+
+    return notes
+
+
+###############
+# NOTE VOLUMES
+###############
+
+# The formula you want for a given amplitude (0..1) given a volume knob setting  (0..10)
+def vol_to_amp(volume):
+    amplitude = 10 * ((-6*(10 - volume)) / 20)
+    return amplitude
+
+
+root_amp = vol_to_amp(args.accent)
+amp = vol_to_amp(args.volume)
+
+
+################
+# NOTE ENVELOPE
+################
+
+# Use FRAC (args.ramp) as a fraction of the beat time for the attack/release time of the note envelope.
+def envelope(samples):
+    size = len(samples)
+    envelope_size = int((size / args.beats) * args.ramp)
+
+    # create an envelope going from 0 to 1
+    # (well, not actually 0, that would just waste the first sample)
+    ramp_up = np.linspace(0.01, 1, num=envelope_size)
+
+    # apply the ram to the beginning of the array
+    samples[0:envelope_size] *= ramp_up
+
+    # instead of creating a ramp down, just flip the array and use the same ramp again :D
+    samples = samples.flip
+    samples[0:envelope_size] *= ramp_up
+
+    # flip back and return the samples with the envelope applied
+    samples = samples.flip
+    return samples
+
+
+###############
+# PROGRAM LOOP
+###############
+
+# Based on the Pseudocode the assignment instructions
+#
+# repeat until interrupted
+#     play root frequency for beat interval (square wave, accent volume, ramp)
+#     for remaining beats
+#         k ← random key from scale up 1 to 8 scale steps from root
+#         play frequency k for beat interval (sine wave, volume, ramp)
+
+
+
+
+
+
 
 
 
