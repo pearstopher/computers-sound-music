@@ -1,8 +1,12 @@
-# Homework 3
+# Homework 4
 
 Christopher Juncker
 
 *Prompt: Briefly describe what you did, how it went, and what is still to be done.*
+
+## To do
+
+(This is just the leftover readme from the old assignment 3)
 
 ## Setup
 
