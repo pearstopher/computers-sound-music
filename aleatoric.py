@@ -202,7 +202,7 @@ amp = vol_to_amp(args.volume)
 # Use FRAC (args.ramp) as a fraction of the beat time for the attack/release time of the note envelope.
 def envelope(samples):
     size = len(samples)
-    envelope_size = int((size / args.beats) * args.ramp)
+    envelope_size = int(size * args.ramp)
 
     # create an envelope going from 0 to 1
     # (well, not actually 0, that would just waste the first sample)
