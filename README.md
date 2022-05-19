@@ -11,7 +11,7 @@ Christopher Juncker
 I hadn't used `argparse` in Python yet so the first step of this program was reading
 their documentation and learning how to set up the arguments. This program can be
 run with any of six arguments which are described fully in the assignment handout and
-in the comments at the start of `aleatoricpy`. Essentially, the program can be run as
+in the comments at the start of `aleatoric.py`. Essentially, the program can be run as
 follows:
 
 ```bash
